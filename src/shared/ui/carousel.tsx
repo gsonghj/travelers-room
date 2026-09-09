@@ -139,12 +139,33 @@ function Carousel({
   )
 }
 
+const CONTENT_HORIZONTAL_SPACING = {
+  0: "-ml-0",
+  2: "-ml-2",
+  4: "-ml-4",
+} as const
+const CONTENT_VERTICAL_SPACING = {
+  0: "-mt-0",
+  2: "-mt-2",
+  4: "-mt-4",
+} as const
+const ITEM_HORIZONTAL_SPACING = {
+  0: "pl-0",
+  2: "pl-2",
+  4: "pl-4",
+} as const
+const ITEM_VERTICAL_SPACING = {
+  0: "pt-0",
+  2: "pt-2",
+  4: "pt-4",
+} as const
+
 function CarouselContent({
   className,
   spacing = 4,
   ...props
 }: React.ComponentProps<"div"> & {
-  spacing?: number
+  spacing?: 0 | 2 | 4
 }) {
   const { carouselRef, orientation } = useCarousel()
 
@@ -158,8 +179,8 @@ function CarouselContent({
         className={cn(
           "flex",
           orientation === "horizontal"
-            ? `-ml-${spacing}`
-            : `-mt-${spacing} flex-col`
+            ? CONTENT_HORIZONTAL_SPACING[spacing]
+            : `${CONTENT_VERTICAL_SPACING[spacing]} flex-col`
         )}
         {...props}
       />
@@ -172,7 +193,7 @@ function CarouselItem({
   spacing = 4,
   ...props
 }: React.ComponentProps<"div"> & {
-  spacing?: number
+  spacing?: 0 | 2 | 4
 }) {
   const { orientation } = useCarousel()
 
@@ -183,7 +204,9 @@ function CarouselItem({
       data-slot="carousel-item"
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
-        orientation === "horizontal" ? `pl-${spacing}` : `pt-${spacing}`,
+        orientation === "horizontal"
+          ? ITEM_HORIZONTAL_SPACING[spacing]
+          : ITEM_VERTICAL_SPACING[spacing],
         className
       )}
       {...props}
