@@ -11,30 +11,39 @@ const SECTIONS = [
   { id: "review-list", label: "리뷰" },
 ] as const
 
-export function SectionNav() {
-  const [activeId, setActiveId] = useState<
-    "overview" | "room-list" | "location" | "review-list"
-  >("overview")
-  const isScrolling = useRef(false)
+type SectionId = (typeof SECTIONS)[number]["id"]
 
-  const scrollTo = (
-    id: "overview" | "room-list" | "location" | "review-list"
-  ) => {
+export function SectionNav() {
+  const [activeId, setActiveId] = useState<SectionId>("overview")
+  const isScrolling = useRef(false)
+  const cancelPendingScroll = useRef<() => void>(() => {})
+
+  const scrollTo = (id: SectionId) => {
     const el = document.getElementById(id)
     if (!el) return
 
+    cancelPendingScroll.current()
+
     isScrolling.current = true
     setActiveId(id)
+
+    const finish = () => {
+      isScrolling.current = false
+      window.removeEventListener("scrollend", finish)
+      clearTimeout(fallbackTimer)
+      cancelPendingScroll.current = () => {}
+    }
+
+    window.addEventListener("scrollend", finish, { once: true })
+
+    const fallbackTimer = setTimeout(finish, 1000)
+
+    cancelPendingScroll.current = finish
+
     el.scrollIntoView({
       behavior: "smooth",
       block: "start",
     })
-
-    const handleScrollEnd = () => {
-      isScrolling.current = false
-      window.removeEventListener("scrollend", handleScrollEnd)
-    }
-    window.addEventListener("scrollend", handleScrollEnd)
   }
 
   // 페이지 진입 시 스크롤 위치를 최상단으로 이동
@@ -60,7 +69,10 @@ export function SectionNav() {
       observers.push(observer)
     })
 
-    return () => observers.forEach((o) => o.disconnect())
+    return () => {
+      observers.forEach((o) => o.disconnect())
+      cancelPendingScroll.current()
+    }
   }, [])
 
   return (
