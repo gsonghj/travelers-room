@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { renderToString } from "react-dom/server"
 
 import { cn } from "@/shared/lib/utils"
@@ -28,6 +28,7 @@ export function NaverMap({
 }: NaverMapProps) {
   const mapElementRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<naver.maps.Map | null>(null)
+  const [mapReady, setMapReady] = useState(false)
 
   const markersRef = useRef(markers)
   const prevActiveIdRef = useRef<string | null>(null)
@@ -49,32 +50,40 @@ export function NaverMap({
 
   // 지도 생성
   useEffect(() => {
-    const { naver } = window
-    // 스크립트가 아직 로드되지 않았거나, 지도가 렌더링될 요소가 없거나, 이미 지도 인스턴스가 존재하면 종료
-    if (!naver || !mapElementRef.current || mapRef.current) return
+    function initMap() {
+      const { naver } = window
+      // 스크립트가 아직 로드되지 않았거나, 지도가 렌더링될 요소가 없거나, 이미 지도 인스턴스가 존재하면 종료
+      if (!naver || !mapElementRef.current || mapRef.current) return
 
-    const map = new naver.maps.Map(mapElementRef.current, {
-      center: new naver.maps.LatLng(33.3590628, 126.534361), // 제주도 중심 좌표
-      maxZoom: 18,
-      minZoom: 10,
-      scrollWheel: false,
-      zoomControl: true,
-      zoomControlOptions: {
-        position: naver.maps.Position.TOP_RIGHT,
-        style: naver.maps.ZoomControlStyle.SMALL,
-      },
-    })
+      const map = new naver.maps.Map(mapElementRef.current, {
+        center: new naver.maps.LatLng(33.3590628, 126.534361), // 제주도 중심 좌표
+        maxZoom: 18,
+        minZoom: 10,
+        scrollWheel: false,
+        zoomControl: true,
+        zoomControlOptions: {
+          position: naver.maps.Position.TOP_RIGHT,
+          style: naver.maps.ZoomControlStyle.SMALL,
+        },
+      })
 
-    // 지도 저장
-    mapRef.current = map
+      // 지도 저장
+      mapRef.current = map
 
-    // 지도 클릭 이벤트 핸들러 등록
-    naver.maps.Event.addListener(map, "click", () => {
-      onMapClickRef.current?.()
-    })
+      // 지도 클릭 이벤트 핸들러 등록
+      naver.maps.Event.addListener(map, "click", () => {
+        onMapClickRef.current?.()
+      })
+
+      setMapReady(true)
+    }
+
+    initMap()
+    window.addEventListener("naver-maps-ready", initMap)
 
     return () => {
-      map.destroy()
+      window.removeEventListener("naver-maps-ready", initMap)
+      mapRef.current?.destroy()
       mapRef.current = null
     }
   }, [])
@@ -139,7 +148,7 @@ export function NaverMap({
         left: 50,
       })
     }
-  }, [markers]) // 마커 데이터가 바뀔 때마다 실행
+  }, [markers, mapReady]) // 마커 데이터가 바뀔 때마다 실행
 
   // 마커 스타일 업데이트
   useEffect(() => {
@@ -178,7 +187,7 @@ export function NaverMap({
     mapRef.current.panTo(
       new naver.maps.LatLng(activeMarker.lat, activeMarker.lng)
     )
-  }, [activeId, markers])
+  }, [activeId, markers, mapReady])
 
   return (
     <div ref={mapElementRef} className={cn("relative z-0 h-full w-full")} />
