@@ -116,6 +116,8 @@ export function SelectWishlistModal() {
             })
           },
           onError: (error) => {
+            setStep("select")
+            form.reset()
             bottomToast.add({
               type: "error",
               description: error.message,
