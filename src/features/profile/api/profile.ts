@@ -28,6 +28,7 @@ export async function updateProfile({
   const updates: { nickname?: string; avatar?: string | null } = {}
 
   let newAvatarUrl: string | undefined
+  let newAvatarPath: string | undefined
   let updatedProfile: Tables<"profiles">
 
   try {
@@ -40,6 +41,7 @@ export async function updateProfile({
       const fileExtension = newAvatarFile.name.split(".").pop() || "webp" // 파일 확장자 추출, 없으면 webp로 기본 설정
       const fileName = `${Date.now()}-${crypto.randomUUID()}.${fileExtension}` // 파일 이름 생성
       const filePath = `${user.id}/avatar/${fileName}` // 파일 경로 생성
+      newAvatarPath = filePath
       newAvatarUrl = await uploadImage({
         file: newAvatarFile,
         filePath: filePath,
@@ -59,7 +61,8 @@ export async function updateProfile({
     updatedProfile = data
   } catch (error) {
     // 롤백: 업로드된 이미지 삭제
-    if (newAvatarUrl) await removeImages({ paths: [newAvatarUrl] })
+    if (newAvatarPath)
+      await removeImages({ paths: [newAvatarPath] }).catch(() => undefined)
 
     throw error
   }
@@ -71,7 +74,7 @@ export async function updateProfile({
   ) {
     const parts = data?.avatar.split(`/${BUCKET_NAME}/`)
     const url = parts.length > 1 ? parts[1] : data?.avatar
-    await removeImages({ paths: [url] })
+    await removeImages({ paths: [url] }).catch(() => undefined)
   }
 
   return updatedProfile
