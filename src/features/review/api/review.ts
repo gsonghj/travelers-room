@@ -36,28 +36,33 @@ export async function createReview({
   if (createError) throw createError
   if (imagesToUpload.length === 0) return createdReview
 
-  const pathsToUpload: string[] = []
+  let uploaded: { filePath: string; publicUrl: string }[] = []
 
   try {
     // 2. 이미지 업로드
-    const urls = await Promise.all(
+    const settled = await Promise.allSettled(
       imagesToUpload.map(async (file) => {
         const fileExtension = file.name.split(".").pop() || "webp" // 파일 확장자 추출, 없으면 webp로 기본 설정
         const fileName = `${Date.now()}-${crypto.randomUUID()}.${fileExtension}` // 파일 이름 생성
         const filePath = `${user.id}/${createdReview.id}/${fileName}` // 파일 경로 생성
-        const publicUrl = await uploadImage({
-          file: file,
-          filePath: filePath,
-        }) // 이미지 업로드 및 공개 URL 반환
-        pathsToUpload.push(filePath) // 파일 경로 저장
-        return publicUrl
+        const publicUrl = await uploadImage({ file: file, filePath: filePath }) // 이미지 업로드 및 공개 URL 반환
+        return { filePath, publicUrl }
       })
     )
+
+    uploaded = settled.flatMap((result) =>
+      result.status === "fulfilled" ? [result.value] : []
+    )
+
+    const failed = settled.find(
+      (result): result is PromiseRejectedResult => result.status === "rejected"
+    )
+    if (failed) throw failed.reason
 
     // 3. 리뷰 수정 (이미지 URL 추가)
     const { data: updatedReview, error: updateError } = await supabase
       .from("reviews")
-      .update({ images: urls })
+      .update({ images: uploaded.map(({ publicUrl }) => publicUrl) })
       .eq("id", createdReview.id)
       .select()
       .single() // 수정된 리뷰 반환
@@ -67,7 +72,10 @@ export async function createReview({
   } catch (error) {
     // 롤백: 생성된 리뷰 삭제 및 업로드된 이미지 삭제
     await supabase.from("reviews").delete().eq("id", createdReview.id)
-    if (pathsToUpload.length > 0) await removeImages({ paths: pathsToUpload })
+    if (uploaded.length > 0)
+      await removeImages({
+        paths: uploaded.map(({ filePath }) => filePath),
+      }).catch(() => undefined)
 
     throw error
   }
@@ -105,12 +113,13 @@ export async function updateReview({
   let urls: string[] = review.images.filter(
     (url) => !imagesToRemove.includes(url)
   )
-  const pathsToUpload: string[] = []
+  let uploaded: { filePath: string; publicUrl: string }[] = []
+  let updatedReview: Review
 
   try {
     // 2. (imagesToUpload) 이미지 업로드 후 유지할 이미지 URL 배열에 추가
     if (imagesToUpload.length > 0) {
-      const newUrls = await Promise.all(
+      const settled = await Promise.allSettled(
         imagesToUpload.map(async (file) => {
           const fileExtension = file.name.split(".").pop() || "webp" // 파일 확장자 추출, 없으면 webp로 기본 설정
           const fileName = `${Date.now()}-${crypto.randomUUID()}.${fileExtension}` // 파일 이름 생성
@@ -119,15 +128,25 @@ export async function updateReview({
             file: file,
             filePath: filePath,
           }) // 이미지 업로드 및 공개 URL 반환
-          pathsToUpload.push(filePath) // 파일 경로 저장
-          return publicUrl
+          return { filePath, publicUrl }
         })
       )
-      urls = [...urls, ...newUrls]
+
+      uploaded = settled.flatMap((result) =>
+        result.status === "fulfilled" ? [result.value] : []
+      )
+
+      const failed = settled.find(
+        (result): result is PromiseRejectedResult =>
+          result.status === "rejected"
+      )
+      if (failed) throw failed.reason
+
+      urls = [...urls, ...uploaded.map(({ publicUrl }) => publicUrl)]
     }
 
     // 3. 리뷰 수정 (이미지 URL 업데이트)
-    const { data: updatedReview, error: updateError } = await supabase
+    const { data, error: updateError } = await supabase
       .from("reviews")
       .update({
         rating: newRating,
@@ -140,22 +159,27 @@ export async function updateReview({
 
     if (updateError) throw updateError
 
-    // 4. (imagesToRemove) 이미지 삭제
-    if (imagesToRemove.length > 0) {
-      const pathsToRemove = imagesToRemove.map((url) => {
-        const parts = url.split(`/${BUCKET_NAME}/`)
-        return parts.length > 1 ? parts[1] : url
-      })
-      await removeImages({ paths: pathsToRemove })
-    }
-
-    return updatedReview
+    updatedReview = data
   } catch (error) {
     // 롤백: 업로드된 이미지 삭제
-    if (pathsToUpload.length > 0) await removeImages({ paths: pathsToUpload })
+    if (uploaded.length > 0)
+      await removeImages({
+        paths: uploaded.map(({ filePath }) => filePath),
+      }).catch(() => undefined)
 
     throw error
   }
+
+  // 4. (imagesToRemove) 이미지 삭제
+  if (imagesToRemove.length > 0) {
+    const pathsToRemove = imagesToRemove.map((url) => {
+      const parts = url.split(`/${BUCKET_NAME}/`)
+      return parts.length > 1 ? parts[1] : url
+    })
+    await removeImages({ paths: pathsToRemove }).catch(() => undefined)
+  }
+
+  return updatedReview
 }
 
 // 리뷰 삭제
@@ -179,7 +203,7 @@ export async function deleteReview({
       const parts = url.split(`/${BUCKET_NAME}/`)
       return parts.length > 1 ? parts[1] : url
     })
-    await removeImages({ paths: pathsToRemove })
+    await removeImages({ paths: pathsToRemove }).catch(() => undefined)
   }
 
   return deletedReview
