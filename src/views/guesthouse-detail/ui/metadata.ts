@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { notFound } from "next/navigation"
 
 import { fetchGuesthouse } from "@/entities/guesthouse"
 
@@ -10,6 +11,8 @@ export async function generateMetadata({
   const { guesthouseId } = await params
 
   const guesthouse = await fetchGuesthouse({ guesthouseId })
+
+  if (!guesthouse) notFound()
 
   return {
     title: guesthouse.name,

@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation"
 import {
   Call02Icon,
   CircleParkingOffIcon,
@@ -40,6 +41,8 @@ export default async function Page({
     fetchGuesthouse({ guesthouseId }),
     fetchRooms({ guesthouseId }),
   ])
+
+  if (!guesthouse) notFound()
 
   const jsonLd = {
     "@context": "https://schema.org",

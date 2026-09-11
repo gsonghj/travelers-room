@@ -25,13 +25,14 @@ export async function fetchGuesthouse({
   guesthouseId,
 }: {
   guesthouseId: string
-}): Promise<Tables<"guesthouses">> {
+}): Promise<Tables<"guesthouses"> | null> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from("guesthouses")
     .select("*")
     .eq("id", guesthouseId)
-    .single()
+    .eq("status", "APPROVED")
+    .maybeSingle()
 
   if (error) throw error
   return data
