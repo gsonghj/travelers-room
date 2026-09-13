@@ -56,7 +56,7 @@ export function ImageCarousel({
                       sizes={
                         variant === "modal"
                           ? "(max-width: 48rem) 100vw, (max-width: 64rem) 36rem, (max-width: 80rem) 42rem, 48rem"
-                          : "100vw"
+                          : "(max-width: 80rem) 100vw, 80rem"
                       }
                       className="object-contain"
                     />

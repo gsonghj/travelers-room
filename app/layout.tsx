@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { Geist_Mono } from "next/font/google"
 import localFont from "next/font/local"
 
 import { KakaoScript } from "@/app/providers/kakao-script"
@@ -23,12 +22,11 @@ import { Toaster } from "@/shared/ui/toast"
 import "./globals.css"
 
 const pretendard = localFont({
-  src: "../src/shared/assets/PretendardVariable.woff2",
+  src: "../src/shared/assets/PretendardVariable.subset.woff2",
   display: "swap",
-  weight: "45 920",
+  weight: "400 700",
   variable: "--font-sans",
 })
-const fontMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 const title = "여행자의 방"
 const description =
@@ -58,11 +56,7 @@ export default async function RootLayout({
     <html
       lang="ko"
       suppressHydrationWarning
-      className={cn(
-        "font-sans antialiased",
-        pretendard.variable,
-        fontMono.variable
-      )}
+      className={cn("font-sans antialiased", pretendard.variable)}
     >
       <body>
         <KakaoScript />

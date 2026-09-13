@@ -43,7 +43,7 @@ export function RoomCard({
             src={images[0] || "/placeholder.jpg"}
             alt={`${name}의 대표 이미지`}
             fill
-            sizes="(max-width: 40rem) 100vw, (max-width: 64rem) 50vw, 33vw"
+            sizes="(max-width: 40rem) 100vw, (max-width: 64rem) 50vw, (max-width: 80rem) 33vw, 24rem"
             className="object-cover"
           />
         </div>
