@@ -22,11 +22,11 @@ export function useWishlist({ wishlistId }: { wishlistId: string }) {
   })
 }
 
-// 기본 위시리스트 조회
-export function useBaseWishlist() {
+// 기본 위시리스트 ID 조회
+export function useBaseWishlistId() {
   return useQuery({
     queryKey: queryKeys.wishlists.all,
     queryFn: () => fetchWishlists({ supabase: createClient() }),
-    select: (data) => data.find((wishlist) => wishlist.base),
+    select: (data) => data.find((wishlist) => wishlist.base)?.id,
   })
 }

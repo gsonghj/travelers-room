@@ -21,7 +21,6 @@ import {
 
 type GuesthouseGridProps = {
   items: GuesthouseCardProps[]
-  wishlistedIds: Set<string>
   activeId: string | null
   scrollMarginTop: number
   isFetchingNextPage?: boolean
@@ -30,7 +29,6 @@ type GuesthouseGridProps = {
 
 export function GuesthouseGrid({
   items,
-  wishlistedIds,
   activeId,
   scrollMarginTop,
   isFetchingNextPage,
@@ -77,12 +75,7 @@ export function GuesthouseGrid({
             avg_rating={item.avg_rating}
             review_count={item.review_count}
             min_price={item.min_price}
-            action={
-              <WishlistButton
-                guesthouseId={item.id}
-                wishlisted={wishlistedIds.has(item.id)}
-              />
-            }
+            action={<WishlistButton guesthouseId={item.id} />}
             lcp={index === 0}
           />
         )

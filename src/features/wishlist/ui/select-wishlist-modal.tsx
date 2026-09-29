@@ -9,7 +9,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   MiniWishlistCard,
   MiniWishlistCardSkeleton,
-  useBaseWishlist,
+  useBaseWishlistId,
   useWishlists,
 } from "@/entities/wishlist"
 
@@ -38,13 +38,13 @@ export function SelectWishlistModal() {
   })
 
   const { data: wishlists, isLoading } = useWishlists()
-  const { data: baseWishlist } = useBaseWishlist()
+  const { data: baseWishlistId } = useBaseWishlistId()
 
   // 순차적 비동기 실행을 위해 mutateAsync 사용
   const { mutateAsync: createWishlist, isPending: isCreating } =
     useCreateWishlist()
   const { mutate: updateWishlistItem, isPending: isUpdating } =
-    useUpdateWishlistItem({ baseWishlistId: baseWishlist?.id })
+    useUpdateWishlistItem({ baseWishlistId: baseWishlistId })
 
   const isPending = isCreating || isUpdating
 

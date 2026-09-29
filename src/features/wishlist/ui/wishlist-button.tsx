@@ -4,7 +4,7 @@ import { FavouriteIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import { useProfile } from "@/entities/profile"
-import { useBaseWishlist } from "@/entities/wishlist"
+import { useBaseWishlistId, useIsWishlisted } from "@/entities/wishlist"
 
 import { cn } from "@/shared/lib/utils"
 import { useOpenLoginModal } from "@/shared/store/login-modal.store"
@@ -19,20 +19,19 @@ import {
 
 type WishlistButtonProps = {
   guesthouseId: string
-  wishlisted?: boolean
   type?: "card" | "page"
 }
 
 export function WishlistButton({
   guesthouseId,
-  wishlisted = false,
   type = "card",
 }: WishlistButtonProps) {
   const openLoginModal = useOpenLoginModal()
   const openSelectWishlistModal = useOpenSelectWishlistModal()
 
   const { data: profile } = useProfile()
-  const { data: baseWishlist } = useBaseWishlist()
+  const { data: wishlisted } = useIsWishlisted({ guesthouseId })
+  const { data: baseWishlistId } = useBaseWishlistId()
 
   const { mutate: addToWishlist, isPending: isAdding } = useCreateWishlistItem()
   const { mutate: removeFromWishlist, isPending: isRemoving } =
@@ -46,7 +45,7 @@ export function WishlistButton({
       return
     }
 
-    if (!baseWishlist) {
+    if (!baseWishlistId) {
       bottomToast.add({
         type: "warning",
         description: "잠시 후 다시 시도해주세요",
@@ -72,7 +71,7 @@ export function WishlistButton({
       addToWishlist(
         {
           guesthouseId,
-          wishlistId: baseWishlist.id,
+          wishlistId: baseWishlistId,
         },
         {
           onSuccess: (data) => {

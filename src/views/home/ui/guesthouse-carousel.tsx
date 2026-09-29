@@ -7,7 +7,6 @@ import {
   type GuesthouseCardProps,
   GuesthouseCardSkeleton,
 } from "@/entities/guesthouse"
-import { useWishlistedGuesthouseIds } from "@/entities/wishlist"
 
 import {
   Carousel,
@@ -23,9 +22,6 @@ type GuesthouseCarouselProps = {
 }
 
 export function GuesthouseCarousel({ items, lcp }: GuesthouseCarouselProps) {
-  const { data: wishlistedIds = new Set<string>() } =
-    useWishlistedGuesthouseIds()
-
   return (
     // 모바일에서는 화면 가로를 꽉 채우도록 함
     <div className="-mx-6 md:mx-0">
@@ -44,12 +40,7 @@ export function GuesthouseCarousel({ items, lcp }: GuesthouseCarouselProps) {
                 avg_rating={item.avg_rating}
                 review_count={item.review_count}
                 min_price={item.min_price}
-                action={
-                  <WishlistButton
-                    guesthouseId={item.id}
-                    wishlisted={wishlistedIds.has(item.id)}
-                  />
-                }
+                action={<WishlistButton guesthouseId={item.id} />}
                 variant="carousel"
                 lcp={lcp && index === 0}
               />

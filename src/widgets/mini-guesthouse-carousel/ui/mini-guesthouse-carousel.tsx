@@ -28,7 +28,6 @@ import {
 
 type MiniGuesthouseCarouselProps = {
   items: GuesthouseCardProps[]
-  wishlistedIds: Set<string>
   activeId: string | null
   onActiveIdChange: (id: string) => void
   isFetchingNextPage?: boolean
@@ -37,7 +36,6 @@ type MiniGuesthouseCarouselProps = {
 
 export function MiniGuesthouseCarousel({
   items,
-  wishlistedIds,
   activeId,
   onActiveIdChange,
   isFetchingNextPage,
@@ -101,12 +99,7 @@ export function MiniGuesthouseCarousel({
                 avg_rating={item.avg_rating}
                 review_count={item.review_count}
                 min_price={item.min_price}
-                action={
-                  <WishlistButton
-                    guesthouseId={item.id}
-                    wishlisted={wishlistedIds.has(item.id)}
-                  />
-                }
+                action={<WishlistButton guesthouseId={item.id} />}
               />
             </CarouselItem>
           )

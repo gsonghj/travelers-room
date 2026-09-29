@@ -14,7 +14,6 @@ import { useHeaderActions } from "@/widgets/header"
 import { WishlistButton } from "@/features/wishlist"
 
 import { formatRegion } from "@/entities/guesthouse"
-import { useWishlistedGuesthouseIds } from "@/entities/wishlist"
 
 import type { Tables } from "@/shared/api/supabase/types"
 import { Button, buttonVariants } from "@/shared/ui/button"
@@ -30,9 +29,6 @@ export function IntroSection({
   guesthouse: { id, name, region, naver },
 }: HeaderProps) {
   const { setHeader, resetHeader } = useHeaderActions()
-
-  const { data: wishlistedIds = new Set<string>() } =
-    useWishlistedGuesthouseIds()
 
   const { ref, inView } = useInView({
     threshold: 0.25,
@@ -55,11 +51,7 @@ export function IntroSection({
       </div>
 
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <WishlistButton
-          guesthouseId={id}
-          wishlisted={wishlistedIds.has(id)}
-          type="page"
-        />
+        <WishlistButton guesthouseId={id} type="page" />
         <ShareButton />
         {naver && (
           <a

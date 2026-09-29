@@ -17,6 +17,15 @@ export function useWishlistedGuesthouseIds() {
   })
 }
 
+// 게스트하우스 찜 여부 조회
+export function useIsWishlisted({ guesthouseId }: { guesthouseId: string }) {
+  return useQuery({
+    queryKey: queryKeys.wishlistItems.ids(),
+    queryFn: () => fetchWishlistedGuesthouseIds({ supabase: createClient() }),
+    select: (ids) => ids.has(guesthouseId),
+  })
+}
+
 // 위시리스트 아이템 목록 조회 (무한 스크롤)
 export function useWishlistItems({ wishlistId }: { wishlistId: string }) {
   return useInfiniteQuery({

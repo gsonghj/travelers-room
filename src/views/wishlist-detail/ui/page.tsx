@@ -18,11 +18,7 @@ import {
   MiniGuesthouseCarouselSkeleton,
 } from "@/widgets/mini-guesthouse-carousel"
 
-import {
-  useWishlist,
-  useWishlistedGuesthouseIds,
-  useWishlistItems,
-} from "@/entities/wishlist"
+import { useWishlist, useWishlistItems } from "@/entities/wishlist"
 
 import { cn } from "@/shared/lib/utils"
 import { type Marker, NaverMap } from "@/shared/ui/naver-map"
@@ -40,8 +36,6 @@ export default function Page() {
   const { data: wishlist } = useWishlist({ wishlistId })
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useWishlistItems({ wishlistId })
-  const { data: wishlistedIds = new Set<string>() } =
-    useWishlistedGuesthouseIds()
 
   const items = useMemo(
     () =>
@@ -116,7 +110,6 @@ export default function Page() {
         ) : items.length > 0 ? (
           <GuesthouseGrid
             items={items}
-            wishlistedIds={wishlistedIds}
             activeId={selectedId}
             scrollMarginTop={scrollMarginTop}
             isFetchingNextPage={isFetchingNextPage}
@@ -171,7 +164,6 @@ export default function Page() {
             ) : items.length > 0 ? (
               <MiniGuesthouseCarousel
                 items={items}
-                wishlistedIds={wishlistedIds}
                 activeId={selectedId}
                 onActiveIdChange={setActiveId}
                 isFetchingNextPage={isFetchingNextPage}

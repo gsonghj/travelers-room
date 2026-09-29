@@ -28,8 +28,6 @@ import {
   useSearchGuesthouses,
 } from "@/features/search"
 
-import { useWishlistedGuesthouseIds } from "@/entities/wishlist"
-
 import { cn } from "@/shared/lib/utils"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
@@ -55,8 +53,6 @@ export default function Page() {
   )
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useSearchGuesthouses(values)
-  const { data: wishlistedIds = new Set<string>() } =
-    useWishlistedGuesthouseIds()
 
   const total = data?.pages[0].total ?? 0
   const items = useMemo(
@@ -161,7 +157,6 @@ export default function Page() {
         ) : total > 0 ? (
           <GuesthouseGrid
             items={items}
-            wishlistedIds={wishlistedIds}
             activeId={selectedId}
             scrollMarginTop={scrollMarginTop}
             isFetchingNextPage={isFetchingNextPage}
@@ -216,7 +211,6 @@ export default function Page() {
             ) : total > 0 ? (
               <MiniGuesthouseCarousel
                 items={items}
-                wishlistedIds={wishlistedIds}
                 activeId={selectedId}
                 onActiveIdChange={setActiveId}
                 isFetchingNextPage={isFetchingNextPage}

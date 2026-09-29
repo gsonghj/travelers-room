@@ -5,11 +5,12 @@ export {
 } from "./api/wishlist-item"
 export type { Wishlist, WishlistItem } from "./model/types"
 export {
-  useBaseWishlist,
+  useBaseWishlistId,
   useWishlist,
   useWishlists,
 } from "./model/wishlist.queries"
 export {
+  useIsWishlisted,
   useWishlistedGuesthouseIds,
   useWishlistItems,
 } from "./model/wishlist-item.queries"
