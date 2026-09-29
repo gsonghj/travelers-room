@@ -27,9 +27,6 @@ import { ReviewListSection } from "./review-list-section"
 import { RoomList } from "./room-list"
 import { SectionNav } from "./section-nav"
 
-// ISR 주기
-export const revalidate = 3600 // 1시간
-
 export default async function Page({
   params,
 }: {

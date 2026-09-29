@@ -5,9 +5,6 @@ import { SITE_URL } from "@/shared/config/site"
 import { GuesthouseCarousel } from "./guesthouse-carousel"
 import { HomeSearchBar } from "./home-search-bar"
 
-// ISR 주기
-export const revalidate = 3600 // 1시간
-
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
